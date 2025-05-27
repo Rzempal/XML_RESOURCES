@@ -1,0 +1,5 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/host361978/aplikacja/xml_resources"
+PassengerBaseURI "/api/xml_resources"
+PassengerPython "/home/host361978/virtualenv/aplikacja/xml_resources/3.10/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
