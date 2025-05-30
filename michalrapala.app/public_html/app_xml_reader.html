@@ -2,108 +2,263 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Analizator XML z Process Simulate</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    th, td {
+      min-width: 120px; /* Zmniejszona minimalna szerokość dla większej liczby kolumn */
+      max-width: 300px; /* Maksymalna szerokość, aby uniknąć zbyt szerokich kolumn */
+      text-align: left;
+      padding: 8px 10px; /* Nieco mniejszy padding */
+      border: 1px solid #d1d5db; /* gray-300 */
+      white-space: normal; /* Pozwól na zawijanie tekstu */
+      word-break: break-word; /* Łam słowa, jeśli są zbyt długie */
+    }
+    th {
+      background-color: #f3f4f6; /* gray-100 */
+      color: #374151; /* gray-700 */
+      font-weight: 600; /* font-semibold */
+      position: sticky; /* Przyklejone nagłówki */
+      top: 0; /* Na samej górze */
+      z-index: 10;
+    }
+    tr:nth-child(even) {
+      background-color: #f9fafb; /* gray-50 */
+    }
+    tr:hover {
+      background-color: #eff6ff; /* blue-50 */
+    }
+    input[type="file"], input[type="password"] {
+      border-color: #d1d5db; /* gray-300 */
+      padding: 0.75rem; /* p-3 */
+    }
+    .container-wrapper {
+        width: 100%;
+        max-width: 95%; /* Zwiększona maksymalna szerokość dla tabeli */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .card {
+        background-color: white;
+        padding: 1.5rem; /* p-6 */
+        border-radius: 0.75rem; /* rounded-xl */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+        margin-bottom: 2rem; /* mb-8 */
+    }
+    .status-message {
+        margin-top: 1rem; /* mt-4 */
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        padding: 0.75rem; /* Zwiększony padding */
+        border-radius: 0.375rem; /* rounded-md */
+        text-align: center;
+    }
+    .status-error {
+        color: #991b1b; /* red-800 */
+        background-color: #fee2e2; /* red-100 */
+        border: 1px solid #fecaca; /* red-200 */
+    }
+    .status-processing {
+        color: #1e40af; /* blue-800 */
+        background-color: #dbeafe; /* blue-100 */
+        border: 1px solid #bfdbfe; /* blue-200 */
+    }
+    .status-success {
+        color: #065f46; /* green-800 */
+        background-color: #d1fae5; /* green-100 */
+        border: 1px solid #a7f3d0; /* green-200 */
+    }
+    .table-container {
+        max-height: 70vh; /* Ograniczenie wysokości tabeli i dodanie przewijania */
+        overflow-y: auto;
+        overflow-x: auto; /* Dodane dla bezpieczeństwa, gdyby kolumny były bardzo liczne */
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col items-center p-8">
-  <h1 class="text-3xl font-bold mb-6">Analiza stacji z pliku XML</h1>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center p-4 md:p-6">
+  <div class="container-wrapper">
+    <header class="mb-6 text-center py-4">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-700">Analizator Stacji z Pliku XML</h1>
+      <p class="text-md text-gray-500 mt-1">Wygenerowany z Tecnomatix Process Simulate</p>
+    </header>
 
-  <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-xl">
-    <label class="block mb-2 font-semibold">Wybierz plik XML:</label>
-    <input type="file" id="fileInput" class="mb-4 w-full border rounded p-2" />
+    <div class="card md:max-w-2xl mx-auto"> {/* Ograniczenie szerokości karty formularza */}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label for="fileInput" class="block mb-2 text-sm font-medium text-gray-700">Wybierz plik XML:</label>
+          <input type="file" id="fileInput" accept=".xml" class="w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+        </div>
+        <div>
+          <label for="passwordInput" class="block mb-2 text-sm font-medium text-gray-700">Hasło dostępu:</label>
+          <input type="password" id="passwordInput" class="w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+      </div>
+      <button id="analyzeBtn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out font-semibold">
+        Przeanalizuj Plik
+      </button>
+      <div id="status" class="status-message" role="alert" aria-live="assertive"></div>
+    </div>
 
-    <label class="block mb-2 font-semibold">Hasło dostępu:</label>
-    <input type="password" id="passwordInput" class="mb-4 w-full border rounded p-2" />
-
-    <button id="analyzeBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      Przeanalizuj
-    </button>
-
-    <div id="status" class="mt-4 text-sm text-red-600 font-medium"></div>
-  </div>
-
-  <div id="results" class="mt-8 w-full max-w-4xl hidden">
-    <h2 class="text-xl font-bold mb-4">Wyniki:</h2>
-    <table class="table-auto w-full border border-gray-300">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="border px-4 py-2">Robot</th>
-          <th class="border px-4 py-2">Application Tools</th>
-          <th class="border px-4 py-2">Components</th>
-        </tr>
-      </thead>
-      <tbody id="resultsTable"></tbody>
-    </table>
+    <div id="resultsSection" class="card hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Wyniki Analizy dla Stacji: <span id="stationName" class="text-blue-600 font-bold"></span></h2>
+      <div class="table-container rounded-lg border border-gray-200">
+        <table class="min-w-full table-auto">
+          <thead id="resultsTableHead">
+            {/* Nagłówki tabeli będą dodawane tutaj przez JavaScript */}
+          </thead>
+          <tbody id="resultsTableBody" class="text-gray-700 text-sm divide-y divide-gray-200">
+            {/* Wiersze tabeli będą dodawane tutaj przez JavaScript */}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script>
-    document.getElementById("analyzeBtn").addEventListener("click", () => {
-      const fileInput = document.getElementById("fileInput");
-      const passwordInput = document.getElementById("passwordInput");
-      const status = document.getElementById("status");
+    const fileInput = document.getElementById("fileInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const statusDiv = document.getElementById("status");
+    const resultsSection = document.getElementById("resultsSection");
+    const stationNameSpan = document.getElementById("stationName");
+    const resultsTableHead = document.getElementById("resultsTableHead"); // Referencja do thead
+    const resultsTableBody = document.getElementById("resultsTableBody");
 
+    analyzeBtn.addEventListener("click", () => {
       const file = fileInput.files[0];
       const password = passwordInput.value;
 
-      if (!file || !password) {
-        status.textContent = "Wybierz plik i wpisz hasło.";
+      statusDiv.textContent = ""; 
+      statusDiv.className = "status-message"; 
+
+      if (!file) {
+        statusDiv.textContent = "Proszę wybrać plik XML.";
+        statusDiv.classList.add("status-error");
+        return;
+      }
+      if (!password) {
+        statusDiv.textContent = "Proszę wprowadzić hasło.";
+        statusDiv.classList.add("status-error");
         return;
       }
 
-      status.textContent = "Przesyłanie danych...";
+      statusDiv.textContent = "Przetwarzanie... Proszę czekać.";
+      statusDiv.classList.add("status-processing");
+      resultsSection.classList.add("hidden"); 
+      resultsTableHead.innerHTML = ""; // Wyczyść nagłówki tabeli
+      resultsTableBody.innerHTML = ""; 
+      analyzeBtn.disabled = true; 
+      analyzeBtn.classList.add("opacity-50", "cursor-not-allowed");
 
       const formData = new FormData();
-      formData.append("file", file);  // KLUCZOWA ZMIANA
+      formData.append("file", file);
       formData.append("password", password);
 
       fetch("/api/xml_resources/analyze", {
         method: "POST",
         body: formData,
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          return response.json()
+            .then(errData => { 
+              const errorMessage = errData && errData.error ? errData.error : `Błąd serwera: ${response.status} (${response.statusText})`;
+              throw new Error(errorMessage);
+            })
+            .catch(() => { 
+              throw new Error(`Błąd serwera: ${response.status} (${response.statusText}). Odpowiedź serwera nie jest w oczekiwanym formacie.`);
+            });
+        }
+        return response.json(); 
+      })
       .then(data => {
-        if (data.error) {
-          status.textContent = "Błąd: " + data.error;
+        if (data.error) { 
+          statusDiv.textContent = "Błąd: " + data.error;
+          statusDiv.className = "status-message status-error";
+          resultsSection.classList.add("hidden");
         } else {
-          status.textContent = "";
-          showResults(data);
+          statusDiv.textContent = "Analiza zakończona pomyślnie.";
+          statusDiv.className = "status-message status-success";
+          
+          stationNameSpan.textContent = data.station || "Nieznana";
+          if (data.robots && data.robots.length > 0) {
+            setupTableHeaders(data.all_cojt_column_headers || []);
+            populateTableRows(data.robots, data.all_cojt_column_headers || []);
+            resultsSection.classList.remove("hidden");
+          } else {
+            statusDiv.textContent = "Nie znaleziono robotów dla tej stacji lub brak danych .cojt do wyświetlenia.";
+            statusDiv.className = "status-message status-error"; 
+            resultsSection.classList.add("hidden");
+          }
         }
       })
-      .catch(error => {
-        console.error("Błąd sieci:", error);
-        status.textContent = "Błąd połączenia z serwerem.";
+      .catch(error => { 
+        console.error("Błąd krytyczny (fetch catch):", error); 
+        statusDiv.textContent = "Wystąpił krytyczny błąd: " + error.message;
+        statusDiv.className = "status-message status-error";
+        resultsSection.classList.add("hidden");
+      })
+      .finally(() => { 
+        analyzeBtn.disabled = false; 
+        analyzeBtn.classList.remove("opacity-50", "cursor-not-allowed");
       });
     });
 
-    function showResults(data) {
-      const resultsSection = document.getElementById("results");
-      const resultsTable = document.getElementById("resultsTable");
-      resultsTable.innerHTML = "";
+    function setupTableHeaders(cojtHeaders) {
+      resultsTableHead.innerHTML = ""; // Wyczyść istniejące nagłówki
+      const headerRow = resultsTableHead.insertRow();
+      
+      // Stała kolumna "Robot"
+      let thRobot = document.createElement("th");
+      thRobot.className = "py-3 px-4 sticky left-0 bg-gray-50 z-20"; // Przyklejenie kolumny Robot
+      thRobot.textContent = "Robot";
+      headerRow.appendChild(thRobot);
 
-      data.robots.forEach(robot => {
-        const row = document.createElement("tr");
+      // Dynamiczne kolumny dla .cojt
+      cojtHeaders.forEach(headerText => {
+        let th = document.createElement("th");
+        th.className = "py-3 px-4";
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+      });
+    }
 
-        const robotCell = document.createElement("td");
-        robotCell.className = "border px-4 py-2 font-mono";
+    function populateTableRows(robots, cojtHeaders) {
+      resultsTableBody.innerHTML = ""; 
+      robots.forEach(robot => {
+        const row = resultsTableBody.insertRow();
+        row.className = "hover:bg-gray-50";
+
+        // Komórka dla nazwy robota
+        const robotCell = row.insertCell();
+        robotCell.className = "py-3 px-4 font-mono text-sm sticky left-0 bg-white group-hover:bg-gray-50 z-10"; // Przyklejenie komórki Robot
         robotCell.textContent = robot.robot;
 
-        const toolsCell = document.createElement("td");
-        toolsCell.className = "border px-4 py-2";
-        toolsCell.textContent = robot.application_tools.join(", ");
-
-        const componentsCell = document.createElement("td");
-        componentsCell.className = "border px-4 py-2 text-gray-500";
-        componentsCell.textContent = robot.components.join(", ");
-
-        row.appendChild(robotCell);
-        row.appendChild(toolsCell);
-        row.appendChild(componentsCell);
-
-        resultsTable.appendChild(row);
+        // Komórki dla dynamicznych danych .cojt
+        cojtHeaders.forEach(headerKey => {
+          const cell = row.insertCell();
+          cell.className = "py-3 px-4 text-sm";
+          const cojtFiles = robot.cojt_data ? robot.cojt_data[headerKey] : null;
+          if (cojtFiles && cojtFiles.length > 0 && !(cojtFiles.length === 1 && cojtFiles[0] === "Brak danych")) {
+            // Tworzenie listy UL dla wielu plików .cojt
+            const ul = document.createElement('ul');
+            ul.className = 'list-disc list-inside';
+            cojtFiles.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file;
+                ul.appendChild(li);
+            });
+            cell.appendChild(ul);
+          } else {
+            cell.textContent = "Brak danych";
+          }
+        });
       });
-
-      resultsSection.classList.remove("hidden");
     }
   </script>
 </body>
