@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- xml_reader_v3_dynamic_cojt_debug -->
+<!-- app_xml_reader_html_v3_display_debug_info -->
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
@@ -115,6 +115,19 @@
     ul.cojt-list li {
         padding: 2px 0; 
     }
+    #debugInfoOutput { /* Styl dla kontenera informacji debugowych */
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: #1f2937; /* Ciemne tło (gray-800) */
+        color: #f3f4f6; /* Jasny tekst (gray-100) */
+        border-radius: 0.5rem; /* rounded-lg */
+        font-family: monospace;
+        white-space: pre-wrap; /* Zachowaj formatowanie i zawijaj wiersze */
+        word-break: break-all;
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 0.8rem;
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -140,6 +153,12 @@
         Przeanalizuj Plik
       </button>
       <div id="status" class="status-message" role="alert" aria-live="assertive"></div>
+      {/* === NOWY KONTENER NA INFORMACJE DEBUGOWE === */}
+      <div id="debugInfoContainer" class="mt-4">
+        <h3 class="text-lg font-semibold text-gray-700">Informacje Debugowe (Frontend):</h3>
+        <pre id="debugInfoOutput" class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto text-xs"></pre>
+      </div>
+      {/* === KONIEC KONTENERA === */}
     </div>
 
     <div id="resultsSection" class="card hidden">
@@ -147,10 +166,8 @@
       <div class="table-container">
         <table id="resultsTable">
           <thead id="resultsTableHead">
-            {/* Nagłówki tabeli będą dodawane tutaj przez JavaScript */}
           </thead>
           <tbody id="resultsTableBody" class="text-gray-700 text-sm">
-            {/* Wiersze tabeli będą dodawane tutaj przez JavaScript */}
           </tbody>
         </table>
       </div>
@@ -166,6 +183,7 @@
     const stationNameSpan = document.getElementById("stationName");
     const resultsTableHead = document.getElementById("resultsTableHead");
     const resultsTableBody = document.getElementById("resultsTableBody");
+    const debugInfoOutput = document.getElementById("debugInfoOutput"); // Referencja do nowego kontenera
 
     analyzeBtn.addEventListener("click", () => {
       const file = fileInput.files[0];
@@ -173,6 +191,7 @@
 
       statusDiv.textContent = ""; 
       statusDiv.className = "status-message"; 
+      debugInfoOutput.textContent = ""; // Wyczyść poprzednie informacje debugowe
 
       if (!file) {
         statusDiv.textContent = "Proszę wybrać plik XML.";
@@ -215,17 +234,21 @@
         return response.json(); 
       })
       .then(data => {
-        // === DODANE LOGI DEBUGOWE ===
-        console.log("Pełna odpowiedź z serwera (data):", data);
+        // === WYŚWIETLANIE INFORMACJI DEBUGOWYCH NA STRONIE ===
+        let debugText = "Pełna odpowiedź z serwera (data):\n" + JSON.stringify(data, null, 2) + "\n\n";
         if (data && data.all_cojt_column_headers) {
-            console.log("Otrzymane nagłówki COJT (data.all_cojt_column_headers):", data.all_cojt_column_headers);
-            console.log("Typ data.all_cojt_column_headers:", typeof data.all_cojt_column_headers);
-            console.log("Czy data.all_cojt_column_headers jest tablicą?:", Array.isArray(data.all_cojt_column_headers));
-            console.log("Długość data.all_cojt_column_headers:", data.all_cojt_column_headers.length);
+            debugText += "Otrzymane nagłówki COJT (data.all_cojt_column_headers):\n" + JSON.stringify(data.all_cojt_column_headers, null, 2) + "\n";
+            debugText += "Typ data.all_cojt_column_headers: " + typeof data.all_cojt_column_headers + "\n";
+            debugText += "Czy data.all_cojt_column_headers jest tablicą?: " + Array.isArray(data.all_cojt_column_headers) + "\n";
+            debugText += "Długość data.all_cojt_column_headers: " + data.all_cojt_column_headers.length + "\n\n";
         } else {
-            console.log("Pole data.all_cojt_column_headers nie istnieje lub jest puste w odpowiedzi.");
+            debugText += "Pole data.all_cojt_column_headers nie istnieje lub jest puste w odpowiedzi.\n\n";
         }
-        // === KONIEC LOGÓW DEBUGOWYCH ===
+        const cojtHeadersForTable = data.all_cojt_column_headers || [];
+        debugText += "Zmienna cojtHeadersForTable (po data.all_cojt_column_headers || []):\n" + JSON.stringify(cojtHeadersForTable, null, 2) + "\n";
+        debugText += "Długość zmiennej cojtHeadersForTable: " + cojtHeadersForTable.length + "\n";
+        debugInfoOutput.textContent = debugText;
+        // === KONIEC WYŚWIETLANIA INFORMACJI DEBUGOWYCH ===
 
         if (data.error) { 
           statusDiv.textContent = "Błąd: " + data.error;
@@ -236,31 +259,26 @@
           statusDiv.className = "status-message status-success";
           
           stationNameSpan.textContent = data.station || "Nieznana";
-          const cojtHeaders = data.all_cojt_column_headers || []; // To powinno być poprawne
+          // Używamy zmiennej cojtHeadersForTable zdefiniowanej wyżej
           
-          // === DODANY LOG DEBUGOWY ===
-          console.log("Zmienna cojtHeaders (po data.all_cojt_column_headers || []):", cojtHeaders);
-          console.log("Długość zmiennej cojtHeaders:", cojtHeaders.length);
-          // === KONIEC LOGU DEBUGOWEGO ===
-
           if (data.robots && data.robots.length > 0) {
-            setupTableHeaders(cojtHeaders);
-            populateTableRows(data.robots, cojtHeaders);
+            setupTableHeaders(cojtHeadersForTable);
+            populateTableRows(data.robots, cojtHeadersForTable);
             resultsSection.classList.remove("hidden");
           } else {
             statusDiv.textContent = "Nie znaleziono robotów dla tej stacji.";
             statusDiv.className = "status-message status-error"; 
             resultsSection.classList.add("hidden");
-            // Mimo braku robotów, spróbujmy ustawić nagłówki, jeśli przyszły (na wypadek pustej listy robotów, ale z nagłówkami)
-            if (cojtHeaders.length > 0) {
-                setupTableHeaders(cojtHeaders);
-                resultsSection.classList.remove("hidden"); // Pokaż tabelę z samymi nagłówkami
+            if (cojtHeadersForTable.length > 0) { // Nadal spróbuj ustawić nagłówki
+                setupTableHeaders(cojtHeadersForTable);
+                resultsSection.classList.remove("hidden");
             }
           }
         }
       })
       .catch(error => { 
         console.error("Błąd krytyczny (fetch catch):", error); 
+        debugInfoOutput.textContent = "BŁĄD KRYTYCZNY (fetch catch):\n" + error.stack; // Wyświetl błąd na stronie
         statusDiv.textContent = "Wystąpił krytyczny błąd: " + error.message;
         statusDiv.className = "status-message status-error";
         resultsSection.classList.add("hidden");
@@ -275,22 +293,16 @@
       resultsTableHead.innerHTML = ""; 
       const headerRow = resultsTableHead.insertRow();
       
-      // === DODANY LOG DEBUGOWY ===
-      console.log("setupTableHeaders - otrzymane cojtHeaders:", cojtHeaders);
-      console.log("setupTableHeaders - długość cojtHeaders:", cojtHeaders.length);
-      // === KONIEC LOGU DEBUGOWEGO ===
-      
       let thRobot = document.createElement("th");
       thRobot.className = "py-3 px-4"; 
       thRobot.textContent = "Robot";
       headerRow.appendChild(thRobot);
 
-      if (!cojtHeaders || cojtHeaders.length === 0) { // Zmieniony warunek na bardziej odporny
+      if (!cojtHeaders || cojtHeaders.length === 0) { 
         let thNoData = document.createElement("th");
         thNoData.className = "py-3 px-4";
         thNoData.textContent = "Dane .cojt"; 
         headerRow.appendChild(thNoData);
-        console.log("setupTableHeaders - brak nagłówków COJT, dodano placeholder.");
       } else {
         cojtHeaders.forEach(headerText => {
           let th = document.createElement("th");
@@ -298,18 +310,11 @@
           th.textContent = headerText;
           headerRow.appendChild(th);
         });
-        console.log("setupTableHeaders - dodano dynamiczne nagłówki COJT:", cojtHeaders);
       }
     }
 
     function populateTableRows(robots, cojtHeaders) {
       resultsTableBody.innerHTML = ""; 
-
-      // === DODANY LOG DEBUGOWY ===
-      console.log("populateTableRows - otrzymane roboty:", robots);
-      console.log("populateTableRows - otrzymane cojtHeaders:", cojtHeaders);
-      // === KONIEC LOGU DEBUGOWEGO ===
-
       robots.forEach(robot => {
         const row = resultsTableBody.insertRow();
         
@@ -321,18 +326,14 @@
             const cell = row.insertCell();
             cell.className = "py-3 px-4 text-sm";
             cell.textContent = "Brak zdefiniowanych kategorii .cojt";
-            console.log("populateTableRows - brak nagłówków COJT, dodano placeholder dla robota:", robot.robot);
         } else {
             cojtHeaders.forEach(headerKey => {
               const cell = row.insertCell();
               cell.className = "py-3 px-4 text-sm";
-              // === DODANY LOG DEBUGOWY ===
-              // console.log(`populateTableRows - Robot: ${robot.robot}, HeaderKey: ${headerKey}, Dostępne dane COJT:`, robot.cojt_data);
-              // === KONIEC LOGU DEBUGOWEGO ===
               const cojtFiles = robot.cojt_data ? robot.cojt_data[headerKey] : null;
               
               if (cojtFiles && Array.isArray(cojtFiles) && cojtFiles.length > 0) {
-                if (cojtFiles.length === 1 && cojtFiles[0] === "Brak danych") { // Backend może zwrócić ["Brak danych"]
+                if (cojtFiles.length === 1 && cojtFiles[0] === "Brak danych") { 
                      cell.textContent = "Brak danych";
                 } else {
                     const ul = document.createElement('ul');
