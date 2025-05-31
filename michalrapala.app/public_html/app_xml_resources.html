@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- xml_reader_v3_dynamic_cojt_debug -->
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
@@ -9,73 +10,110 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    .table-container {
+        width: 100%;
+        max-height: 70vh; 
+        overflow: auto; 
+        border: 1px solid #e5e7eb; 
+        border-radius: 0.5rem; 
+    }
+    table {
+        border-collapse: separate; 
+        border-spacing: 0; 
+        width: 100%;
+    }
     th, td {
-      min-width: 120px; /* Zmniejszona minimalna szerokość dla większej liczby kolumn */
-      max-width: 300px; /* Maksymalna szerokość, aby uniknąć zbyt szerokich kolumn */
+      min-width: 150px; 
+      max-width: 350px; 
       text-align: left;
-      padding: 8px 10px; /* Nieco mniejszy padding */
-      border: 1px solid #d1d5db; /* gray-300 */
-      white-space: normal; /* Pozwól na zawijanie tekstu */
-      word-break: break-word; /* Łam słowa, jeśli są zbyt długie */
+      padding: 10px 12px; 
+      border-bottom: 1px solid #e5e7eb; 
+      border-right: 1px solid #e5e7eb; 
+      white-space: normal; 
+      word-break: break-word; 
+      background-color: white; 
     }
-    th {
-      background-color: #f3f4f6; /* gray-100 */
-      color: #374151; /* gray-700 */
-      font-weight: 600; /* font-semibold */
-      position: sticky; /* Przyklejone nagłówki */
-      top: 0; /* Na samej górze */
-      z-index: 10;
+    th:last-child, td:last-child {
+        border-right: none; 
     }
-    tr:nth-child(even) {
-      background-color: #f9fafb; /* gray-50 */
+    thead th { 
+      background-color: #f9fafb; 
+      color: #374151; 
+      font-weight: 600; 
+      position: sticky; 
+      top: 0; 
+      z-index: 20; 
     }
-    tr:hover {
-      background-color: #eff6ff; /* blue-50 */
+    tbody tr:nth-child(even) td { 
+      background-color: #f3f4f6; 
+    }
+    tbody tr:hover td {
+      background-color: #eff6ff; 
+    }
+    th:first-child, td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 10; 
+    }
+    thead th:first-child {
+        z-index: 30; 
+    }
+    tbody tr:nth-child(even) td:first-child {
+        background-color: #f3f4f6; 
+    }
+     tbody tr:nth-child(odd) td:first-child {
+        background-color: white;
+    }
+    tbody tr:hover td:first-child {
+        background-color: #eff6ff; 
     }
     input[type="file"], input[type="password"] {
-      border-color: #d1d5db; /* gray-300 */
-      padding: 0.75rem; /* p-3 */
+      border-color: #d1d5db; 
+      padding: 0.75rem; 
     }
     .container-wrapper {
         width: 100%;
-        max-width: 95%; /* Zwiększona maksymalna szerokość dla tabeli */
+        max-width: 95%; 
         margin-left: auto;
         margin-right: auto;
     }
     .card {
         background-color: white;
-        padding: 1.5rem; /* p-6 */
-        border-radius: 0.75rem; /* rounded-xl */
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-        margin-bottom: 2rem; /* mb-8 */
+        padding: 1.5rem; 
+        border-radius: 0.75rem; 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+        margin-bottom: 2rem; 
     }
     .status-message {
-        margin-top: 1rem; /* mt-4 */
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500; /* font-medium */
-        padding: 0.75rem; /* Zwiększony padding */
-        border-radius: 0.375rem; /* rounded-md */
+        margin-top: 1rem; 
+        font-size: 0.875rem; 
+        font-weight: 500; 
+        padding: 0.75rem; 
+        border-radius: 0.375rem; 
         text-align: center;
     }
     .status-error {
-        color: #991b1b; /* red-800 */
-        background-color: #fee2e2; /* red-100 */
-        border: 1px solid #fecaca; /* red-200 */
+        color: #991b1b; 
+        background-color: #fee2e2; 
+        border: 1px solid #fecaca; 
     }
     .status-processing {
-        color: #1e40af; /* blue-800 */
-        background-color: #dbeafe; /* blue-100 */
-        border: 1px solid #bfdbfe; /* blue-200 */
+        color: #1e40af; 
+        background-color: #dbeafe; 
+        border: 1px solid #bfdbfe; 
     }
     .status-success {
-        color: #065f46; /* green-800 */
-        background-color: #d1fae5; /* green-100 */
-        border: 1px solid #a7f3d0; /* green-200 */
+        color: #065f46; 
+        background-color: #d1fae5; 
+        border: 1px solid #a7f3d0; 
     }
-    .table-container {
-        max-height: 70vh; /* Ograniczenie wysokości tabeli i dodanie przewijania */
-        overflow-y: auto;
-        overflow-x: auto; /* Dodane dla bezpieczeństwa, gdyby kolumny były bardzo liczne */
+    ul.cojt-list {
+        list-style-type: none; 
+        padding-left: 0;
+        margin: 0;
+    }
+    ul.cojt-list li {
+        padding: 2px 0; 
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -87,7 +125,7 @@
       <p class="text-md text-gray-500 mt-1">Wygenerowany z Tecnomatix Process Simulate</p>
     </header>
 
-    <div class="card md:max-w-2xl mx-auto"> {/* Ograniczenie szerokości karty formularza */}
+    <div class="card md:max-w-2xl mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <label for="fileInput" class="block mb-2 text-sm font-medium text-gray-700">Wybierz plik XML:</label>
@@ -106,12 +144,12 @@
 
     <div id="resultsSection" class="card hidden">
       <h2 class="text-xl font-semibold mb-4 text-gray-700">Wyniki Analizy dla Stacji: <span id="stationName" class="text-blue-600 font-bold"></span></h2>
-      <div class="table-container rounded-lg border border-gray-200">
-        <table class="min-w-full table-auto">
+      <div class="table-container">
+        <table id="resultsTable">
           <thead id="resultsTableHead">
             {/* Nagłówki tabeli będą dodawane tutaj przez JavaScript */}
           </thead>
-          <tbody id="resultsTableBody" class="text-gray-700 text-sm divide-y divide-gray-200">
+          <tbody id="resultsTableBody" class="text-gray-700 text-sm">
             {/* Wiersze tabeli będą dodawane tutaj przez JavaScript */}
           </tbody>
         </table>
@@ -126,7 +164,7 @@
     const statusDiv = document.getElementById("status");
     const resultsSection = document.getElementById("resultsSection");
     const stationNameSpan = document.getElementById("stationName");
-    const resultsTableHead = document.getElementById("resultsTableHead"); // Referencja do thead
+    const resultsTableHead = document.getElementById("resultsTableHead");
     const resultsTableBody = document.getElementById("resultsTableBody");
 
     analyzeBtn.addEventListener("click", () => {
@@ -150,7 +188,7 @@
       statusDiv.textContent = "Przetwarzanie... Proszę czekać.";
       statusDiv.classList.add("status-processing");
       resultsSection.classList.add("hidden"); 
-      resultsTableHead.innerHTML = ""; // Wyczyść nagłówki tabeli
+      resultsTableHead.innerHTML = ""; 
       resultsTableBody.innerHTML = ""; 
       analyzeBtn.disabled = true; 
       analyzeBtn.classList.add("opacity-50", "cursor-not-allowed");
@@ -177,6 +215,18 @@
         return response.json(); 
       })
       .then(data => {
+        // === DODANE LOGI DEBUGOWE ===
+        console.log("Pełna odpowiedź z serwera (data):", data);
+        if (data && data.all_cojt_column_headers) {
+            console.log("Otrzymane nagłówki COJT (data.all_cojt_column_headers):", data.all_cojt_column_headers);
+            console.log("Typ data.all_cojt_column_headers:", typeof data.all_cojt_column_headers);
+            console.log("Czy data.all_cojt_column_headers jest tablicą?:", Array.isArray(data.all_cojt_column_headers));
+            console.log("Długość data.all_cojt_column_headers:", data.all_cojt_column_headers.length);
+        } else {
+            console.log("Pole data.all_cojt_column_headers nie istnieje lub jest puste w odpowiedzi.");
+        }
+        // === KONIEC LOGÓW DEBUGOWYCH ===
+
         if (data.error) { 
           statusDiv.textContent = "Błąd: " + data.error;
           statusDiv.className = "status-message status-error";
@@ -186,14 +236,26 @@
           statusDiv.className = "status-message status-success";
           
           stationNameSpan.textContent = data.station || "Nieznana";
+          const cojtHeaders = data.all_cojt_column_headers || []; // To powinno być poprawne
+          
+          // === DODANY LOG DEBUGOWY ===
+          console.log("Zmienna cojtHeaders (po data.all_cojt_column_headers || []):", cojtHeaders);
+          console.log("Długość zmiennej cojtHeaders:", cojtHeaders.length);
+          // === KONIEC LOGU DEBUGOWEGO ===
+
           if (data.robots && data.robots.length > 0) {
-            setupTableHeaders(data.all_cojt_column_headers || []);
-            populateTableRows(data.robots, data.all_cojt_column_headers || []);
+            setupTableHeaders(cojtHeaders);
+            populateTableRows(data.robots, cojtHeaders);
             resultsSection.classList.remove("hidden");
           } else {
-            statusDiv.textContent = "Nie znaleziono robotów dla tej stacji lub brak danych .cojt do wyświetlenia.";
+            statusDiv.textContent = "Nie znaleziono robotów dla tej stacji.";
             statusDiv.className = "status-message status-error"; 
             resultsSection.classList.add("hidden");
+            // Mimo braku robotów, spróbujmy ustawić nagłówki, jeśli przyszły (na wypadek pustej listy robotów, ale z nagłówkami)
+            if (cojtHeaders.length > 0) {
+                setupTableHeaders(cojtHeaders);
+                resultsSection.classList.remove("hidden"); // Pokaż tabelę z samymi nagłówkami
+            }
           }
         }
       })
@@ -210,54 +272,83 @@
     });
 
     function setupTableHeaders(cojtHeaders) {
-      resultsTableHead.innerHTML = ""; // Wyczyść istniejące nagłówki
+      resultsTableHead.innerHTML = ""; 
       const headerRow = resultsTableHead.insertRow();
       
-      // Stała kolumna "Robot"
+      // === DODANY LOG DEBUGOWY ===
+      console.log("setupTableHeaders - otrzymane cojtHeaders:", cojtHeaders);
+      console.log("setupTableHeaders - długość cojtHeaders:", cojtHeaders.length);
+      // === KONIEC LOGU DEBUGOWEGO ===
+      
       let thRobot = document.createElement("th");
-      thRobot.className = "py-3 px-4 sticky left-0 bg-gray-50 z-20"; // Przyklejenie kolumny Robot
+      thRobot.className = "py-3 px-4"; 
       thRobot.textContent = "Robot";
       headerRow.appendChild(thRobot);
 
-      // Dynamiczne kolumny dla .cojt
-      cojtHeaders.forEach(headerText => {
-        let th = document.createElement("th");
-        th.className = "py-3 px-4";
-        th.textContent = headerText;
-        headerRow.appendChild(th);
-      });
+      if (!cojtHeaders || cojtHeaders.length === 0) { // Zmieniony warunek na bardziej odporny
+        let thNoData = document.createElement("th");
+        thNoData.className = "py-3 px-4";
+        thNoData.textContent = "Dane .cojt"; 
+        headerRow.appendChild(thNoData);
+        console.log("setupTableHeaders - brak nagłówków COJT, dodano placeholder.");
+      } else {
+        cojtHeaders.forEach(headerText => {
+          let th = document.createElement("th");
+          th.className = "py-3 px-4";
+          th.textContent = headerText;
+          headerRow.appendChild(th);
+        });
+        console.log("setupTableHeaders - dodano dynamiczne nagłówki COJT:", cojtHeaders);
+      }
     }
 
     function populateTableRows(robots, cojtHeaders) {
       resultsTableBody.innerHTML = ""; 
+
+      // === DODANY LOG DEBUGOWY ===
+      console.log("populateTableRows - otrzymane roboty:", robots);
+      console.log("populateTableRows - otrzymane cojtHeaders:", cojtHeaders);
+      // === KONIEC LOGU DEBUGOWEGO ===
+
       robots.forEach(robot => {
         const row = resultsTableBody.insertRow();
-        row.className = "hover:bg-gray-50";
-
-        // Komórka dla nazwy robota
+        
         const robotCell = row.insertCell();
-        robotCell.className = "py-3 px-4 font-mono text-sm sticky left-0 bg-white group-hover:bg-gray-50 z-10"; // Przyklejenie komórki Robot
+        robotCell.className = "py-3 px-4 font-mono text-sm"; 
         robotCell.textContent = robot.robot;
 
-        // Komórki dla dynamicznych danych .cojt
-        cojtHeaders.forEach(headerKey => {
-          const cell = row.insertCell();
-          cell.className = "py-3 px-4 text-sm";
-          const cojtFiles = robot.cojt_data ? robot.cojt_data[headerKey] : null;
-          if (cojtFiles && cojtFiles.length > 0 && !(cojtFiles.length === 1 && cojtFiles[0] === "Brak danych")) {
-            // Tworzenie listy UL dla wielu plików .cojt
-            const ul = document.createElement('ul');
-            ul.className = 'list-disc list-inside';
-            cojtFiles.forEach(file => {
-                const li = document.createElement('li');
-                li.textContent = file;
-                ul.appendChild(li);
+        if (!cojtHeaders || cojtHeaders.length === 0) {
+            const cell = row.insertCell();
+            cell.className = "py-3 px-4 text-sm";
+            cell.textContent = "Brak zdefiniowanych kategorii .cojt";
+            console.log("populateTableRows - brak nagłówków COJT, dodano placeholder dla robota:", robot.robot);
+        } else {
+            cojtHeaders.forEach(headerKey => {
+              const cell = row.insertCell();
+              cell.className = "py-3 px-4 text-sm";
+              // === DODANY LOG DEBUGOWY ===
+              // console.log(`populateTableRows - Robot: ${robot.robot}, HeaderKey: ${headerKey}, Dostępne dane COJT:`, robot.cojt_data);
+              // === KONIEC LOGU DEBUGOWEGO ===
+              const cojtFiles = robot.cojt_data ? robot.cojt_data[headerKey] : null;
+              
+              if (cojtFiles && Array.isArray(cojtFiles) && cojtFiles.length > 0) {
+                if (cojtFiles.length === 1 && cojtFiles[0] === "Brak danych") { // Backend może zwrócić ["Brak danych"]
+                     cell.textContent = "Brak danych";
+                } else {
+                    const ul = document.createElement('ul');
+                    ul.className = 'cojt-list';
+                    cojtFiles.forEach(file => {
+                        const li = document.createElement('li');
+                        li.textContent = file;
+                        ul.appendChild(li);
+                    });
+                    cell.appendChild(ul);
+                }
+              } else {
+                cell.textContent = "Brak danych";
+              }
             });
-            cell.appendChild(ul);
-          } else {
-            cell.textContent = "Brak danych";
-          }
-        });
+        }
       });
     }
   </script>
