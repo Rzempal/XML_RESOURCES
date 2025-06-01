@@ -1,1 +1,2 @@
-Witaj na mojej stronie! Specjalizuję się w innowacyjnych rozwiązaniach dla przemysłu oraz efektywnych narzędziach dla biznesu online. Wybierz obszar, który Cię interesuje:
+Witaj na mojej stronie! 
+Wykorzystuję narzędzia AI, aby tworzyć praktyczne rozwiązania i skutecznie wspierać codzienne zadania
