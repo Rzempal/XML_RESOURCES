@@ -1,4 +1,4 @@
-# v17_reenable_cojt_debug_logs 
+# backend_server_py_v18_direct_copies_iteration.py
 # Importowanie niezbędnych bibliotek
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 import re 
-import json # Dla logowania finalnego JSON
+import json 
 
 # Inicjalizacja aplikacji Flask
 app = Flask(__name__)
@@ -49,10 +49,10 @@ def analyze():
         
         try:
             json_output_for_log = json.dumps(result_data, indent=2, ensure_ascii=False)
-            print(f"DEBUG_JSON_OUTPUT (v17): Finalny obiekt RESULT przygotowany do wysłania:\n{json_output_for_log}", file=sys.stderr)
+            print(f"DEBUG_JSON_OUTPUT (v18): Finalny obiekt RESULT przygotowany do wysłania:\n{json_output_for_log}", file=sys.stderr)
         except Exception as json_log_e:
-            print(f"BŁĄD_LOGOWANIA_JSON (v17): Nie udało się sformatować result_data do JSON dla logu: {json_log_e}", file=sys.stderr)
-            print(f"DEBUG_JSON_OUTPUT (v17): Surowe result_data: {result_data}", file=sys.stderr)
+            print(f"BŁĄD_LOGOWANIA_JSON (v18): Nie udało się sformatować result_data: {json_log_e}", file=sys.stderr)
+            print(f"DEBUG_JSON_OUTPUT (v18): Surowe result_data: {result_data}", file=sys.stderr)
         
         return jsonify(result_data)
     except ET.ParseError as e:
@@ -74,50 +74,53 @@ def find_cojt_data_recursive(current_element_id, robot_core_name, path_segments_
     current_element = all_objects_map_by_id.get(current_element_id)
 
     if not current_element:
-        print(f"DEBUG_COJT (v17): Element o ID '{current_element_id}' (ścieżka: '{'/'.join(path_segments_list)}') nie znaleziony.", file=sys.stderr)
+        print(f"DEBUG_COJT (v18): Element o ID '{current_element_id}' (ścieżka: '{'/'.join(path_segments_list)}') nie znaleziony.", file=sys.stderr)
         return aggregated_cojt_data_from_this_branch
 
     current_element_name = get_name_from_element(current_element) or "ElementBezNazwy"
-    print(f"DEBUG_COJT (v17): ===== Rekurencja dla: '{current_element_name}' (ID: {current_element_id}), Ścieżka dotychczas: {path_segments_list} =====", file=sys.stderr)
+    print(f"DEBUG_COJT (v18): ===== Rekurencja dla: '{current_element_name}' (ID: {current_element_id}), Ścieżka: {path_segments_list} =====", file=sys.stderr)
 
     direct_cojt_files_in_current_element = [] 
     children_ids = [item.text.strip() for item in current_element.findall("./children/item") if item.text]
-    print(f"DEBUG_COJT (v17): Element '{current_element_name}' ma {len(children_ids)} dzieci referencyjnych: {children_ids}", file=sys.stderr)
+    # print(f"DEBUG_COJT (v18): Element '{current_element_name}' ma {len(children_ids)} dzieci ref: {children_ids}", file=sys.stderr)
 
     for child_id in children_ids:
         child_element = all_objects_map_by_id.get(child_id)
-        if not child_element: 
-            print(f"DEBUG_COJT (v17): Dziecko ref. o ID '{child_id}' (elementu '{current_element_name}') nie znalezione w mapie.", file=sys.stderr)
-            continue
+        if not child_element: continue
 
         child_name = get_name_from_element(child_element) or "DzieckoBezNazwy"
-        print(f"DEBUG_COJT (v17): Analizuję dziecko ref: '{child_name}' (ID: {child_id}, Tag: {child_element.tag}) elementu '{current_element_name}'", file=sys.stderr)
+        # print(f"DEBUG_COJT (v18): Analizuję dziecko ref: '{child_name}' (ID: {child_id}, Tag: {child_element.tag}) elementu '{current_element_name}'", file=sys.stderr)
 
         if child_element.tag == "Pm3DRep" and child_name.lower().endswith(".cojt"):
             direct_cojt_files_in_current_element.append(child_name)
-            print(f"DEBUG_COJT (v17): +++ Znaleziono BEZPOŚREDNI Pm3DRep .cojt: '{child_name}' jako dziecko '{current_element_name}' +++", file=sys.stderr)
+            print(f"DEBUG_COJT (v18): +++ Znaleziono BEZPOŚREDNI Pm3DRep .cojt: '{child_name}' jako dziecko '{current_element_name}' +++", file=sys.stderr)
         
         elif child_element.tag != "PmCompoundResource": 
-            print(f"DEBUG_COJT (v17): Dziecko '{child_name}' ({child_element.tag}) nie jest PmCompoundResource. Sprawdzam <copies>...", file=sys.stderr)
+            # print(f"DEBUG_COJT (v18): Dziecko '{child_name}' ({child_element.tag}) nie jest PmCompoundResource. Sprawdzam <copies>...", file=sys.stderr)
             copies_element = child_element.find("copies") 
             if copies_element is not None:
-                print(f"DEBUG_COJT (v17): Znaleziono <copies> w '{child_name}'. Items: {len(copies_element.findall('item'))}", file=sys.stderr)
-                for item_tag_in_copies in copies_element.findall("item"): 
-                    ref_ext_id = item_tag_in_copies.text.strip() if item_tag_in_copies.text else None
-                    if ref_ext_id:
-                        print(f"DEBUG_COJT (v17): Element '{child_name}' ma ref w <copies><item>: '{ref_ext_id}'", file=sys.stderr)
-                        ref_obj = all_objects_map_by_id.get(ref_ext_id)
-                        if ref_obj is not None and ref_obj.tag == "Pm3DRep":
-                            pm3drep_name = get_name_from_element(ref_obj)
-                            if pm3drep_name and pm3drep_name.lower().endswith(".cojt"):
-                                direct_cojt_files_in_current_element.append(pm3drep_name)
-                                print(f"DEBUG_COJT (v17): +++ .cojt ('{pm3drep_name}') przez <copies> z '{child_name}' (w '{current_element_name}') +++", file=sys.stderr)
-                            else: print(f"DEBUG_COJT (v17): Referowany Pm3DRep (ID: {ref_ext_id}) nie ma nazwy .cojt: '{pm3drep_name}'", file=sys.stderr)
-                        elif ref_obj is not None: print(f"DEBUG_COJT (v17): Referowany obiekt (ID: {ref_ext_id}) nie jest Pm3DRep (Tag: {ref_obj.tag})", file=sys.stderr)
-                        else: print(f"DEBUG_COJT (v17): Referowany obiekt o ID '{ref_ext_id}' nie znaleziony w mapie.", file=sys.stderr)
-                    else: print(f"DEBUG_COJT (v17): Pusty <item> w <copies> elementu '{child_name}'.", file=sys.stderr)
-            else:
-                print(f"DEBUG_COJT (v17): Element '{child_name}' (Tag: {child_element.tag}) nie ma tagu <copies>.", file=sys.stderr)
+                print(f"DEBUG_COJT (v18): Znaleziono tag <copies> w '{child_name}'. Iteruję po jego bezpośrednich dzieciach...", file=sys.stderr)
+                found_items_in_copies_count = 0
+                for sub_element_in_copies in copies_element: # === ZMIENIONA ITERACJA ===
+                    print(f"DEBUG_COJT (v18):   Dziecko <copies>: Tag='{sub_element_in_copies.tag}', Text='{sub_element_in_copies.text}'", file=sys.stderr)
+                    if sub_element_in_copies.tag == "item":
+                        found_items_in_copies_count += 1
+                        ref_ext_id = sub_element_in_copies.text.strip() if sub_element_in_copies.text else None
+                        if ref_ext_id:
+                            # print(f"DEBUG_COJT (v18):   Element '{child_name}' ma ref w <copies><item>: '{ref_ext_id}'", file=sys.stderr)
+                            ref_obj = all_objects_map_by_id.get(ref_ext_id)
+                            if ref_obj is not None and ref_obj.tag == "Pm3DRep":
+                                pm3drep_name = get_name_from_element(ref_obj)
+                                if pm3drep_name and pm3drep_name.lower().endswith(".cojt"):
+                                    direct_cojt_files_in_current_element.append(pm3drep_name)
+                                    print(f"DEBUG_COJT (v18):   +++ .cojt ('{pm3drep_name}') przez <copies><item> z '{child_name}' (w '{current_element_name}') +++", file=sys.stderr)
+                                # else: print(f"DEBUG_COJT (v18):   Referowany Pm3DRep (ID: {ref_ext_id}) nie ma nazwy .cojt: '{pm3drep_name}'", file=sys.stderr)
+                            # elif ref_obj is not None: print(f"DEBUG_COJT (v18):   Referowany obiekt (ID: {ref_ext_id}) nie jest Pm3DRep (Tag: {ref_obj.tag})", file=sys.stderr)
+                            # else: print(f"DEBUG_COJT (v18):   Referowany obiekt o ID '{ref_ext_id}' nie znaleziony w mapie.", file=sys.stderr)
+                        # else: print(f"DEBUG_COJT (v18):   Pusty text w <item> w <copies> elementu '{child_name}'.", file=sys.stderr)
+                print(f"DEBUG_COJT (v18): W <copies> elementu '{child_name}' znaleziono {found_items_in_copies_count} tagów <item> przez bezpośrednią iterację.", file=sys.stderr)
+            # else:
+                # print(f"DEBUG_COJT (v18): Element '{child_name}' (Tag: {child_element.tag}) nie ma tagu <copies>.", file=sys.stderr)
 
     if direct_cojt_files_in_current_element:
         category_segment = current_element_name
@@ -134,7 +137,7 @@ def find_cojt_data_recursive(current_element_id, robot_core_name, path_segments_
             aggregated_cojt_data_from_this_branch[final_category_key] = []
         aggregated_cojt_data_from_this_branch[final_category_key].extend(direct_cojt_files_in_current_element)
         aggregated_cojt_data_from_this_branch[final_category_key] = list(set(aggregated_cojt_data_from_this_branch[final_category_key]))
-        print(f"DEBUG_COJT (v17): Kategoria COJT: '{final_category_key}', pliki: {direct_cojt_files_in_current_element} (z folderu '{current_element_name}')", file=sys.stderr)
+        print(f"DEBUG_COJT (v18): Kategoria COJT: '{final_category_key}', pliki: {direct_cojt_files_in_current_element} (z folderu '{current_element_name}')", file=sys.stderr)
 
     for child_id in children_ids:
         child_element = all_objects_map_by_id.get(child_id)
@@ -145,11 +148,11 @@ def find_cojt_data_recursive(current_element_id, robot_core_name, path_segments_
             if robot_core_name and current_folder_segment_for_path and current_folder_segment_for_path.startswith(robot_core_name):
                  current_folder_segment_for_path = current_folder_segment_for_path[len(robot_core_name):].lstrip("-").lstrip("_")
             if not current_folder_segment_for_path: current_folder_segment_for_path = get_name_from_element(current_element) or "FolderPosredni"
-            if not current_folder_segment_for_path: current_folder_segment_for_path = "BrakNazwySegmentu" # Fallback
+            if not current_folder_segment_for_path: current_folder_segment_for_path = "BrakNazwySegmentu" 
             
             new_path_segments = path_segments_list + [current_folder_segment_for_path]
             
-            print(f"DEBUG_COJT (v17): Wywołanie rekurencyjne dla podfolderu '{child_folder_name_raw}' z nową listą segmentów ścieżki: {new_path_segments}", file=sys.stderr)
+            # print(f"DEBUG_COJT (v18): Wywołanie rekurencyjne dla '{child_folder_name_raw}' z path_segments: {new_path_segments}", file=sys.stderr)
             sub_folder_cojt_data = find_cojt_data_recursive(child_id, robot_core_name, new_path_segments)
 
             for category_from_sub, files_from_sub in sub_folder_cojt_data.items():
@@ -158,9 +161,8 @@ def find_cojt_data_recursive(current_element_id, robot_core_name, path_segments_
                     aggregated_cojt_data_from_this_branch[category_from_sub] = list(set(aggregated_cojt_data_from_this_branch[category_from_sub]))
                 else:
                     aggregated_cojt_data_from_this_branch[category_from_sub] = files_from_sub
-                print(f"DEBUG_COJT (v17): Połączono dane z podfolderu. Kategoria: '{category_from_sub}', Pliki: {files_from_sub}", file=sys.stderr)
     
-    print(f"DEBUG_COJT (v17): Zakończono rekurencję dla '{current_element_name}'. Zwracane dane: {aggregated_cojt_data_from_this_branch}", file=sys.stderr)
+    # print(f"DEBUG_COJT (v18): Zakończono rekurencję dla '{current_element_name}'. Zwracane dane: {aggregated_cojt_data_from_this_branch}", file=sys.stderr)
     return aggregated_cojt_data_from_this_branch
 
 def analyze_station_data(xml_content):
@@ -172,7 +174,7 @@ def analyze_station_data(xml_content):
         if external_id:
             all_objects_map_by_id[external_id.strip()] = elem
     
-    print(f"DEBUG (v17): Zbudowano mapę all_objects_map_by_id z {len(all_objects_map_by_id)} elementami.", file=sys.stderr)
+    print(f"DEBUG (v18): Zbudowano mapę all_objects_map_by_id z {len(all_objects_map_by_id)} elementami.", file=sys.stderr)
 
     pr_station_element = root.find(".//PrStation")
     if not pr_station_element:
@@ -200,21 +202,20 @@ def analyze_station_data(xml_content):
         if match:
             robot_core_name = robot_full_name[:len(match.group(1))]
         
-        print(f"INFO (v17): Zidentyfikowano robota: '{robot_core_name}' (Pełna nazwa: '{robot_full_name}')", file=sys.stderr)
+        print(f"INFO (v18): Zidentyfikowano robota: '{robot_core_name}' (Pełna nazwa: '{robot_full_name}')", file=sys.stderr)
         
         robot_cojt_data_aggregated_for_this_robot = {} 
         robot_main_children_ids = [item.text.strip() for item in robot_element.findall("./children/item") if item.text]
-        print(f"DEBUG (v17): Robot '{robot_core_name}' ma {len(robot_main_children_ids)} głównych dzieci do analizy COJT.", file=sys.stderr)
+        # print(f"DEBUG (v18): Robot '{robot_core_name}' ma {len(robot_main_children_ids)} głównych dzieci do analizy COJT.", file=sys.stderr)
 
         for main_child_id in robot_main_children_ids: 
             main_child_element = all_objects_map_by_id.get(main_child_id)
             if main_child_element and main_child_element.tag == "PmCompoundResource": 
                 main_child_name = get_name_from_element(main_child_element) or "FolderGlownyBezNazwy"
-                print(f"DEBUG (v17): Wywołanie find_cojt_data_recursive dla głównego folderu '{main_child_name}' (ID: {main_child_id}) robota '{robot_core_name}'", file=sys.stderr)
-                
+                # print(f"DEBUG (v18): Wywołanie find_cojt_data_recursive dla '{main_child_name}' robota '{robot_core_name}'", file=sys.stderr)
                 cojt_found_in_branch = find_cojt_data_recursive(main_child_id, robot_core_name, path_segments_list=[]) 
                 
-                print(f"DEBUG (v17): Dane COJT zwrócone z find_cojt_data_recursive dla '{main_child_name}': {cojt_found_in_branch}", file=sys.stderr)
+                # print(f"DEBUG (v18): Dane COJT zwrócone z find_cojt_data_recursive dla '{main_child_name}': {cojt_found_in_branch}", file=sys.stderr)
                 for category, files in cojt_found_in_branch.items():
                     all_cojt_headers_set.add(category) 
                     if category in robot_cojt_data_aggregated_for_this_robot:
@@ -229,10 +230,11 @@ def analyze_station_data(xml_content):
         })
 
     sorted_cojt_headers = sorted(list(all_cojt_headers_set))
-    print(f"INFO (v17): Końcowa nazwa stacji: {station_name}, znaleziono robotów: {len(robots_data_list)}", file=sys.stderr)
-    print(f"DEBUG (v17): Wykryte globalne nagłówki kolumn COJT: {sorted_cojt_headers}", file=sys.stderr)
+    # Logi INFO i DEBUG dla finalnych danych
+    print(f"INFO (v18): Końcowa nazwa stacji: {station_name}, znaleziono robotów: {len(robots_data_list)}", file=sys.stderr)
+    print(f"DEBUG (v18): Wykryte globalne nagłówki kolumn COJT: {sorted_cojt_headers}", file=sys.stderr)
     for r_data in robots_data_list:
-        print(f"DEBUG (v17): Robot: {r_data['robot']}, Finalne Dane COJT: {r_data['cojt_data']}", file=sys.stderr)
+        print(f"DEBUG (v18): Robot: {r_data['robot']}, Finalne Dane COJT: {r_data['cojt_data']}", file=sys.stderr)
 
     return {"station": station_name, "robots": robots_data_list, "all_cojt_column_headers": sorted_cojt_headers}
 
